@@ -133,10 +133,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 ${isActive ? 'text-[#5c0000]' : 'text-slate-400'}
               `}
                     >
-                        <div className={`p-2 rounded-xl transition-all ${location.pathname === item.path ? 'bg-red-50 scale-110' : ''}`}>
-                            <item.icon size={22} strokeWidth={isActive ? 3 : 2} />
-                        </div>
-                        <span className={`text-[10px] font-black tracking-tight ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.name}</span>
+                        {({ isActive }) => (
+                            <>
+                                <div className={`p-2 rounded-xl transition-all ${location.pathname === item.path ? 'bg-red-50 scale-110' : ''}`}>
+                                    <item.icon size={22} strokeWidth={isActive ? 3 : 2} />
+                                </div>
+                                <span className={`text-[10px] font-black tracking-tight ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.name}</span>
+                            </>
+                        )}
                     </NavLink>
                 ))}
             </nav>

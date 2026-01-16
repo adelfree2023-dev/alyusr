@@ -1,3 +1,9 @@
+import React, { useState } from 'react';
+import { useStorage } from '../hooks/useStorage';
+import { format } from 'date-fns';
+import { Package, UserPlus, Calendar, DollarSign } from 'lucide-react';
+import type { Merchant } from '../types';
+
 const Inbound: React.FC = () => {
     const { merchants, transactions, products, addMerchant, addProduct, addTransaction, getMerchantBalance, addDebtPayment } = useStorage();
     const [showAddMerchant, setShowAddMerchant] = useState(false);
@@ -110,7 +116,7 @@ const Inbound: React.FC = () => {
                                     required
                                 >
                                     <option value="">اختر المورد</option>
-                                    {suppliers.map(s => (
+                                    {suppliers.map((s: Merchant) => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </select>
@@ -252,7 +258,7 @@ const Inbound: React.FC = () => {
                             <DollarSign size={20} className="text-red-500" />
                         </h3>
                         <div className="space-y-4">
-                            {suppliers.map(s => {
+                            {suppliers.map((s: Merchant) => {
                                 const balance = getMerchantBalance(s.id);
                                 if (balance <= 0) return null;
                                 return (
@@ -270,7 +276,7 @@ const Inbound: React.FC = () => {
                                     </div>
                                 );
                             })}
-                            {suppliers.every(s => getMerchantBalance(s.id) <= 0) && (
+                            {suppliers.every((s: Merchant) => getMerchantBalance(s.id) <= 0) && (
                                 <div className="text-center py-6">
                                     <p className="text-gray-400 font-bold italic text-sm">لا يوجد مديونيات حالية</p>
                                 </div>
@@ -309,7 +315,7 @@ const Inbound: React.FC = () => {
                                 <input value={newProductName} onChange={e => setNewProductName(e.target.value)} required autoFocus placeholder="مثلاً: بسطرمة ممتاز" />
                             </div>
                             <div className="p-4 bg-gray-50 rounded-xl text-sm font-bold text-gray-500">
-                                سيتم ربط هذا الصنف بـ: {merchants.find(m => m.id === selectedMerchantId)?.name}
+                                سيتم ربط هذا الصنف بـ: {merchants.find((m: Merchant) => m.id === selectedMerchantId)?.name}
                             </div>
                             <div className="flex gap-4">
                                 <button type="submit" className="btn btn-primary flex-1">تأكيد</button>

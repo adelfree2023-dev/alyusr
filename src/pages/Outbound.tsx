@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStorage } from '../hooks/useStorage';
 import { ShoppingBag, UserPlus, DollarSign, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import type { Merchant } from '../types';
 
 const Outbound: React.FC = () => {
     const { merchants, transactions, products, addMerchant, addTransaction, getMerchantBalance, addDebtPayment } = useStorage();
@@ -101,7 +102,7 @@ const Outbound: React.FC = () => {
                                     required
                                 >
                                     <option value="">اختر المحل</option>
-                                    {customers.map(s => (
+                                    {customers.map((s: Merchant) => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </select>
@@ -204,7 +205,7 @@ const Outbound: React.FC = () => {
                                         <tr key={t.id} className="hover:bg-gray-50/50 transition-colors">
                                             <td className="p-4">
                                                 <div className="flex flex-col">
-                                                    <span className="font-black text-gray-800">{merchants.find(m => m.id === t.merchantId)?.name}</span>
+                                                    <span className="font-black text-gray-800">{merchants.find((m: Merchant) => m.id === t.merchantId)?.name}</span>
                                                     <span className="text-[10px] text-gray-400 font-bold">{t.itemName} - {t.date}</span>
                                                 </div>
                                             </td>
@@ -231,7 +232,7 @@ const Outbound: React.FC = () => {
                             <DollarSign size={20} className="text-green-600" />
                         </h3>
                         <div className="space-y-4">
-                            {customers.map(s => {
+                            {customers.map((s: Merchant) => {
                                 const balance = getMerchantBalance(s.id);
                                 if (balance <= 0) return null;
                                 return (
@@ -249,7 +250,7 @@ const Outbound: React.FC = () => {
                                     </div>
                                 );
                             })}
-                            {customers.every(s => getMerchantBalance(s.id) <= 0) && (
+                            {customers.every((s: Merchant) => getMerchantBalance(s.id) <= 0) && (
                                 <div className="text-center py-6">
                                     <p className="text-gray-400 font-bold italic text-sm">لا يوجد ديون محصلة</p>
                                 </div>
