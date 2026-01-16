@@ -1,27 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
 
 :root {
-  --primary: #8b0000; /* Dark Red / Pastrami Red */
-  --primary-hover: #a50000;
-  --secondary: #d4af37; /* Metallic Gold */
-  --bg-main: #f8f9fa;
-  --bg-card: #ffffff;
-  --text-main: #212529;
-  --text-muted: #6c757d;
-  --border: #dee2e6;
-  --success: #28a745;
-  --warning: #ffc107;
-  --danger: #dc3545;
-  
+  --primary: #5c0000;
+  /* Richer Dark Burgundy */
+  --primary-light: #8b0000;
+  --accent: #d4af37;
+  /* Legacy Gold */
+  --bg-main: #f0f2f5;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --text-main: #1a1a1a;
+  --text-muted: #64748b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
   font-family: 'Cairo', sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  
-  color-scheme: light;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  direction: rtl;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -29,83 +34,175 @@ body {
   padding: 0;
   background-color: var(--bg-main);
   color: var(--text-main);
-  direction: rtl;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-button {
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s ease;
-}
-
-input, select, textarea {
-  font-family: inherit;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px;
-  font-size: 16px;
-  width: 100%;
-}
-
-input:focus, select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1);
-}
-
+/* Glassmorphism Card */
 .premium-card {
-  background: var(--bg-card);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  padding: 24px;
-  border: 1px solid rgba(0,0,0,0.05);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.premium-card:active {
+  transform: scale(0.98);
+}
+
+/* Premium Inputs */
+input,
+select,
+textarea {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  color: var(--text-main);
+  font-weight: 600;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.1);
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-primary {
-  background-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-weight: 600;
+  box-shadow: 0 4px 6px -1px rgba(139, 0, 0, 0.2);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
+  filter: brightness(1.1);
 }
 
 .btn-outline {
-  background-color: transparent;
-  color: var(--primary);
+  background: white;
   border: 2px solid var(--primary);
-  border-radius: 8px;
-  padding: 10px 22px;
-  font-weight: 600;
+  color: var(--primary);
 }
 
-.btn-outline:hover {
-  background-color: var(--primary);
-  color: white;
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+/* Layout Utilities */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  padding-bottom: 5rem;
+  /* Space for bottom nav */
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .grid {
   display: grid;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
-/* RTL Helpers */
-.text-right { text-align: right; }
-.text-left { text-align: left; }
-
-/* Responsive adjustments */
+/* Mobile Optimizations */
 @media (max-width: 768px) {
-  .premium-card {
-    padding: 16px;
+  .page-container {
+    padding: 1rem;
+    padding-bottom: 6rem;
   }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  input,
+  select,
+  .btn {
+    min-height: 3.5rem;
+    /* Larger touch targets */
+  }
+}
+
+/* Custom Table for Mobile */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th {
+  background: #f8fafc;
+  padding: 1rem;
+  text-align: right;
+  font-weight: 800;
+  color: var(--primary);
+  border-bottom: 2px solid #e2e8f0;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
 }

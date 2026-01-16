@@ -29,7 +29,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         navigate('/login');
     };
 
-    if (!user && location.pathname !== '/login') {
+    if (!user || location.pathname === '/login') {
         return <>{children}</>;
     }
 
@@ -38,58 +38,65 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     );
 
     return (
-        <div className="min-h-screen bg-[#f8f9fa]">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-30 flex items-center justify-between px-4 h-16">
-                <div className="flex items-center gap-2">
+        <div className="min-h-screen bg-[#f0f2f5] flex flex-col">
+            {/* Premium Header */}
+            <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 px-4 h-20 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-4">
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        className="p-2 md:hidden text-gray-600"
+                        className="p-3 md:hidden text-gray-800 hover:bg-gray-100 rounded-full"
                     >
                         {isMobileMenuOpen ? <X /> : <Menu />}
                     </button>
-                    <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold text-[#8b0000]">بسطرمة اليسر</span>
-                        <span className="hidden md:inline-block text-gray-400 text-sm">| نظام الحسابات</span>
+                    <div className="flex flex-col">
+                        <span className="text-xl md:text-2xl font-black text-[#5c0000] tracking-tight">بسطرمة اليسر</span>
+                        <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Al-Yusr Pastrami</span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium hidden sm:inline-block">مرحباً {user?.username}</span>
+                <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex flex-col text-left">
+                        <span className="text-xs font-black text-gray-400">مرحباً بك</span>
+                        <span className="text-sm font-bold text-[#5c0000]">{user?.username}</span>
+                    </div>
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-1 text-sm text-red-600 hover:text-red-800"
+                        className="p-3 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        title="تسجيل خروج"
                     >
-                        <LogOut size={18} />
-                        <span className="hidden sm:inline">تسجيل خروج</span>
+                        <LogOut size={22} />
                     </button>
                 </div>
             </header>
 
-            <div className="flex">
-                {/* Desktop Sidebar */}
-                <aside className="hidden md:flex flex-col w-64 border-l border-gray-200 bg-white min-h-screen p-4 gap-2 sticky top-16">
+            <div className="flex flex-1">
+                {/* Modern Sidebar (Desktop) */}
+                <aside className="hidden md:flex flex-col w-72 bg-white border-l border-gray-100 p-6 gap-3">
+                    <div className="mb-6 px-2">
+                        <p className="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-tighter">القائمة الرئيسية</p>
+                    </div>
                     {filteredItems.map(item => (
                         <NavLink
                             key={item.path}
                             to={item.path}
                             className={({ isActive }) => `
-                flex items-center gap-3 p-3 rounded-xl transition-all
-                ${isActive ? 'bg-[#8b0000] text-white shadow-lg' : 'text-gray-600 hover:bg-gray-100'}
+                flex items-center gap-4 p-4 rounded-2xl transition-all duration-300
+                ${isActive ? 'bg-[#5c0000] text-white shadow-xl shadow-red-900/20' : 'text-slate-600 hover:bg-slate-50'}
               `}
                         >
-                            <item.icon size={20} />
-                            <span className="font-semibold">{item.name}</span>
+                            <item.icon size={22} className={location.pathname === item.path ? 'animate-pulse' : ''} />
+                            <span className="font-bold text-lg">{item.name}</span>
                         </NavLink>
                     ))}
                 </aside>
 
-                {/* Mobile Navigation (Menu or Bottom Nav) */}
+                {/* Mobile Slide-over Menu */}
                 {isMobileMenuOpen && (
-                    <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-                        <div className="bg-white w-2/3 h-full p-4 flex flex-col gap-2 shadow-2xl" onClick={e => e.stopPropagation()}>
-                            <div className="mb-6 pt-4 text-center">
-                                <span className="text-xl font-bold text-[#8b0000]">القائمة</span>
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
+                        <div className="bg-white w-[80%] h-full p-6 flex flex-col gap-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between items-center mb-10">
+                                <span className="text-2xl font-black text-[#5c0000]">القائمة</span>
+                                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-gray-100 rounded-full"><X size={20} /></button>
                             </div>
                             {filteredItems.map(item => (
                                 <NavLink
@@ -97,41 +104,56 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                     to={item.path}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={({ isActive }) => `
-                            flex items-center gap-3 p-3 rounded-xl
-                            ${isActive ? 'bg-[#8b0000] text-white shadow-md' : 'text-gray-600'}
+                            flex items-center gap-4 p-5 rounded-2xl
+                            ${isActive ? 'bg-[#5c0000] text-white shadow-lg' : 'text-slate-600 active:bg-slate-100'}
                         `}
                                 >
-                                    <item.icon size={20} />
-                                    <span className="font-semibold">{item.name}</span>
+                                    <item.icon size={24} />
+                                    <span className="font-black text-xl">{item.name}</span>
                                 </NavLink>
                             ))}
                         </div>
                     </div>
                 )}
 
-                {/* Main Content */}
-                <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+                {/* Dynamic Main Content */}
+                <main className="flex-1 w-full page-container animate-slide-up">
                     {children}
                 </main>
             </div>
 
-            {/* Mobile Bottom Nav */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden flex justify-around py-2 z-30">
+            {/* Native-feeling Bottom Tab Bar (Mobile) */}
+            <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-xl border-t border-gray-100 md:hidden flex justify-around items-center px-4 z-40 shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
                 {filteredItems.map(item => (
                     <NavLink
                         key={item.path}
                         to={item.path}
                         className={({ isActive }) => `
-                flex flex-col items-center gap-1 transition-all
-                ${isActive ? 'text-[#8b0000]' : 'text-gray-400'}
+                flex flex-col items-center justify-center gap-1.5 transition-all w-16 h-16 rounded-2xl
+                ${isActive ? 'text-[#5c0000]' : 'text-slate-400'}
               `}
                     >
-                        <item.icon size={20} />
-                        <span className="text-[10px] font-bold">{item.name}</span>
+                        <div className={`p-2 rounded-xl transition-all ${location.pathname === item.path ? 'bg-red-50 scale-110' : ''}`}>
+                            <item.icon size={22} strokeWidth={isActive ? 3 : 2} />
+                        </div>
+                        <span className={`text-[10px] font-black tracking-tight ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.name}</span>
                     </NavLink>
                 ))}
             </nav>
-            <div className="h-16 md:hidden"></div> {/* Bottom nav spacer */}
+
+            {/* Styles for specific layout components */}
+            <style>{`
+        .animate-fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .flex-col { flex-direction: column; }
+        .text-slate-600 { color: #475569; }
+        .text-slate-400 { color: #94a3b8; }
+        .bg-slate-50 { background-color: #f8fafc; }
+        .tracking-tighter { letter-spacing: -0.05em; }
+        .tracking-tight { letter-spacing: -0.025em; }
+        .tracking-widest { letter-spacing: 0.1em; }
+        .font-black { font-weight: 900; }
+      `}</style>
         </div>
     );
 };

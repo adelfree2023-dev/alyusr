@@ -8,11 +8,19 @@ export interface Merchant {
     phone?: string;
 }
 
+export interface Product {
+    id: string;
+    name: string;
+    supplierId: string;
+    defaultPrice?: number;
+}
+
 export interface Transaction {
     id: string;
     type: TransactionType;
     merchantId: string;
-    itemName: string;
+    productId: string; // Linked to Product entity
+    itemName: string;  // Kept for backward compatibility or display
     weight: number;
     pricePerUnit: number;
     totalAmount: number;

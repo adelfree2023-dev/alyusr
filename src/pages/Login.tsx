@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Lock, User } from 'lucide-react';
+import { LogIn, Lock, User, ShieldCheck } from 'lucide-react';
 
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -24,98 +24,72 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-[80vh]">
-            <div className="premium-card w-full max-w-md shadow-2xl border-t-4 border-[#8b0000]">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-[#8b0000] mb-2">بسطرمة اليسر</h1>
-                    <p className="text-gray-500">سجل الدخول لإدارة حساباتك</p>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 relative overflow-hidden">
+            {/* Background Decorative Elements */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5c0000]/5 rounded-full blur-3xl -mr-64 -mt-64"></div>
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#d4af37]/5 rounded-full blur-3xl -ml-64 -mb-64"></div>
+
+            <div className="w-full max-w-[440px] relative z-10 animate-fade-in">
+                <div className="text-center mb-10 space-y-3">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#5c0000] to-[#800000] rounded-[2.5rem] shadow-2xl mb-4 rotate-3 transform transition-transform hover:rotate-0">
+                        <ShieldCheck size={40} className="text-[#d4af37]" />
+                    </div>
+                    <h1 className="text-4xl font-black text-gray-900 tracking-tighter">بسطرمة اليسر</h1>
+                    <p className="text-gray-500 font-bold text-sm">نظام الإدارة المحاسبية المتقدم</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="grid gap-6">
-                    {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center font-medium border border-red-100">
-                            {error}
+                <div className="premium-card !p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)]">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {error && (
+                            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-xs font-black text-center border-2 border-red-100 animate-slide-up">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">اسم المستخدم</label>
+                            <div className="relative group">
+                                <User className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#5c0000] transition-colors" size={20} />
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="!pr-12 !h-14 font-bold border-2 focus:border-[#5c0000] bg-gray-50/50"
+                                    placeholder="Username"
+                                    required
+                                />
+                            </div>
                         </div>
-                    )}
 
-                    <div className="grid gap-2">
-                        <label className="text-sm font-bold text-gray-700">اسم المستخدم</label>
-                        <div className="relative">
-                            <User className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                className="pr-10"
-                                placeholder="ادخل اسم المستخدم"
-                                required
-                            />
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">كلمة المرور</label>
+                            <div className="relative group">
+                                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#5c0000] transition-colors" size={20} />
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="!pr-12 !h-14 font-bold border-2 focus:border-[#5c0000] bg-gray-50/50"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="grid gap-2">
-                        <label className="text-sm font-bold text-gray-700">كلمة المرور</label>
-                        <div className="relative">
-                            <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="pr-10"
-                                placeholder="ادخل كلمة المرور"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <button type="submit" className="btn-primary flex items-center justify-center gap-2 mt-2">
-                        <LogIn size={20} />
-                        تسجيل الدخول
-                    </button>
-                </form>
-
-                <div className="mt-8 text-center text-xs text-gray-400">
-                    &copy; {new Date().getFullYear()} بسطرمة اليسر - جميع الحقوق محفوظة
+                        <button
+                            type="submit"
+                            className="btn btn-primary w-full h-14 text-lg font-black shadow-xl mt-4 flex items-center justify-center gap-3"
+                        >
+                            تأكيد الدخول
+                            <LogIn size={20} />
+                        </button>
+                    </form>
                 </div>
+
+                <p className="mt-10 text-center text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    &copy; {new Date().getFullYear()} AL-YOSR PASTRAMI • SECURE ACCESS
+                </p>
             </div>
-
-            {/* Basic Tailwind-like helper classes used in the component */}
-            <style>{`
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; }
-        .min-h-\\[80vh\\] { min-height: 80vh; }
-        .w-full { width: 100%; }
-        .max-w-md { max-width: 28rem; }
-        .text-center { text-align: center; }
-        .mb-8 { margin-bottom: 2rem; }
-        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-        .font-bold { font-weight: 700; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .text-gray-500 { color: #6b7280; }
-        .grid { display: grid; }
-        .gap-6 { gap: 1.5rem; }
-        .gap-2 { gap: 0.5rem; }
-        .bg-red-50 { background-color: #fef2f2; }
-        .text-red-600 { color: #dc2626; }
-        .p-3 { padding: 0.75rem; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-        .font-medium { font-weight: 500; }
-        .border-red-100 { border-color: #fee2e2; }
-        .text-gray-700 { color: #374151; }
-        .relative { position: relative; }
-        .absolute { position: absolute; }
-        .right-3 { right: 0.75rem; }
-        .top-1/2 { top: 50%; }
-        .-translate-y-1/2 { transform: translateY(-50%); }
-        .text-gray-400 { color: #9ca3af; }
-        .pr-10 { padding-right: 2.5rem; }
-        .mt-2 { margin-top: 0.5rem; }
-        .gap-2 { gap: 0.5rem; }
-        .mt-8 { margin-top: 2rem; }
-        .text-xs { font-size: 0.75rem; line-height: 1rem; }
-      `}</style>
         </div>
     );
 };

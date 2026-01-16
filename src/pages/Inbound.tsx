@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
-import { useStorage } from '../hooks/useStorage';
-import { ChevronDown, Package, UserPlus, DollarSign, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-
 const Inbound: React.FC = () => {
-    const { merchants, transactions, addMerchant, addTransaction, getMerchantBalance, addDebtPayment } = useStorage();
+    const { merchants, transactions, products, addMerchant, addProduct, addTransaction, getMerchantBalance, addDebtPayment } = useStorage();
     const [showAddMerchant, setShowAddMerchant] = useState(false);
+    const [showAddProduct, setShowAddProduct] = useState(false);
     const [newMerchantName, setNewMerchantName] = useState('');
+    const [newProductName, setNewProductName] = useState('');
 
     const [selectedMerchantId, setSelectedMerchantId] = useState('');
-    const [itemName, setItemName] = useState('بسطرمة');
+    const [selectedProductId, setSelectedProductId] = useState('');
     const [weight, setWeight] = useState<number | ''>('');
     const [price, setPrice] = useState<number | ''>('');
     const [paymentType, setPaymentType] = useState<'cash' | 'credit'>('cash');
     const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
     const suppliers = merchants.filter(m => m.type === 'supplier');
+    const supplierProducts = products.filter(p => p.supplierId === selectedMerchantId);
 
     const handleAddMerchant = (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,15 +24,27 @@ const Inbound: React.FC = () => {
         setShowAddMerchant(false);
     };
 
+    const handleAddProduct = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newProductName || !selectedMerchantId) return;
+        const p = addProduct({ name: newProductName, supplierId: selectedMerchantId });
+        setSelectedProductId(p.id);
+        setNewProductName('');
+        setShowAddProduct(false);
+    };
+
     const handleAddTransaction = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedMerchantId || !weight || !price) return;
+        if (!selectedMerchantId || !selectedProductId || !weight || !price) return;
 
+        const product = products.find(p => p.id === selectedProductId);
         const total = Number(weight) * Number(price);
+
         addTransaction({
             type: 'inbound',
             merchantId: selectedMerchantId,
-            itemName,
+            productId: selectedProductId,
+            itemName: product?.name || '',
             weight: Number(weight),
             pricePerUnit: Number(price),
             totalAmount: total,
@@ -45,10 +55,11 @@ const Inbound: React.FC = () => {
 
         setWeight('');
         setPrice('');
+        alert('تم حفظ الفاتورة بنجاح');
     };
 
     const handlePayDebt = (merchantId: string) => {
-        const amount = prompt('ادخل المبلغ المسدد:');
+        const amount = prompt('ادخل المبلغ المسدد للمورد:');
         if (amount && !isNaN(Number(amount))) {
             addDebtPayment({
                 merchantId,
@@ -61,194 +72,253 @@ const Inbound: React.FC = () => {
 
     const recentTransactions = transactions
         .filter(t => t.type === 'inbound')
-        .slice(0, 10);
+        .slice(0, 5);
 
     return (
-        <div className="grid gap-6">
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">حسابات المدخلات (الموردين)</h2>
-                <button
-                    onClick={() => setShowAddMerchant(!showAddMerchant)}
-                    className="btn-outline flex items-center gap-2 text-sm"
-                >
-                    {showAddMerchant ? <ChevronDown size={18} /> : <UserPlus size={18} />}
-                    {showAddMerchant ? 'إغلاق' : 'مورد جديد'}
-                </button>
+        <div className="grid gap-8 pb-10">
+            <div className="flex flex-col gap-2">
+                <h2 className="section-title">
+                    <Package size={32} className="text-[#5c0000]" />
+                    حسابات الموردين
+                </h2>
+                <p className="text-gray-500 font-bold text-sm">إدارة المشتريات والديون والمنتجات</p>
             </div>
 
-            {showAddMerchant && (
-                <form onSubmit={handleAddMerchant} className="premium-card flex gap-4 items-end animate-fade-in">
-                    <div className="flex-1 grid gap-2">
-                        <label className="text-sm font-semibold">اسم المورد</label>
-                        <input
-                            value={newMerchantName}
-                            onChange={e => setNewMerchantName(e.target.value)}
-                            placeholder="مثال: شركة اليسر للتجارة"
-                            required
-                        />
-                    </div>
-                    <button type="submit" className="btn-primary h-[46px]">إضافة</button>
-                </form>
-            )}
-
-            <div className="grid md:grid-cols-3 gap-6">
-                {/* Purchase Form */}
-                <div className="md:col-span-2 premium-card">
-                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                        <Package className="text-[#8b0000]" /> تسجيل فاتورة شراء
-                    </h3>
-                    <form onSubmit={handleAddTransaction} className="grid sm:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <label className="text-sm font-semibold">المورد</label>
-                            <select
-                                value={selectedMerchantId}
-                                onChange={e => setSelectedMerchantId(e.target.value)}
-                                required
+            <div className="grid lg:grid-cols-3 gap-8">
+                {/* Main Entry Form */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="premium-card">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-black text-gray-800">فاتورة شراء جديدة</h3>
+                            <button
+                                onClick={() => setShowAddMerchant(true)}
+                                className="btn btn-outline btn-sm text-xs"
                             >
-                                <option value="">اختر المورد</option>
-                                {suppliers.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name} (مديونية: {getMerchantBalance(s.id)} ج)</option>
-                                ))}
-                            </select>
+                                <UserPlus size={16} /> مورد جديد
+                            </button>
                         </div>
 
-                        <div className="grid gap-2">
-                            <label className="text-sm font-semibold">الصنف</label>
-                            <input value={itemName} onChange={e => setItemName(e.target.value)} required />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <label className="text-sm font-semibold">الوزن (كجم)</label>
-                            <input
-                                type="number" step="0.001"
-                                value={weight} onChange={e => setWeight(e.target.value === '' ? '' : Number(e.target.value))}
-                                required
-                            />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <label className="text-sm font-semibold">سعر الكيلو</label>
-                            <input
-                                type="number" step="0.01"
-                                value={price} onChange={e => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                                required
-                            />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <label className="text-sm font-semibold">طريقة الدفع</label>
-                            <div className="flex gap-4 p-2 bg-gray-50 rounded-lg">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" checked={paymentType === 'cash'} onChange={() => setPaymentType('cash')} className="w-4 h-4" /> كاش
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" checked={paymentType === 'credit'} onChange={() => setPaymentType('credit')} className="w-4 h-4" /> أجل
-                                </label>
+                        <form onSubmit={handleAddTransaction} className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label>المورد</label>
+                                <select
+                                    value={selectedMerchantId}
+                                    onChange={e => {
+                                        setSelectedMerchantId(e.target.value);
+                                        setSelectedProductId('');
+                                    }}
+                                    required
+                                >
+                                    <option value="">اختر المورد</option>
+                                    {suppliers.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                </select>
                             </div>
-                        </div>
 
-                        <div className="grid gap-2">
-                            <label className="text-sm font-semibold">التاريخ</label>
-                            <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
-                        </div>
-
-                        <div className="sm:col-span-2 pt-4">
-                            <div className="flex justify-between items-center mb-4 p-4 bg-red-50 rounded-xl border border-red-100">
-                                <span className="font-bold text-gray-700">إجمالي الفاتورة:</span>
-                                <span className="text-2xl font-bold text-[#8b0000]">{((Number(weight) || 0) * (Number(price) || 0)).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م</span>
-                            </div>
-                            <button type="submit" className="btn-primary w-full py-4 text-lg">حفظ الفاتورة</button>
-                        </div>
-                    </form>
-                </div>
-
-                {/* Supplier Balances */}
-                <div className="premium-card">
-                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                        <DollarSign className="text-green-600" /> مديونيات الموردين
-                    </h3>
-                    <div className="grid gap-3">
-                        {suppliers.length === 0 && <p className="text-gray-400 text-sm italic">لا يوجد موردين مضافين</p>}
-                        {suppliers.map(s => {
-                            const balance = getMerchantBalance(s.id);
-                            return (
-                                <div key={s.id} className="p-3 border rounded-xl flex justify-between items-center bg-white shadow-sm">
-                                    <div>
-                                        <p className="font-bold text-gray-700">{s.name}</p>
-                                        <p className={`text-sm ${balance > 0 ? 'text-red-500' : 'text-green-500'}`}>
-                                            {balance > 0 ? `${balance} ج.م (عليك)` : 'سداد كامل'}
-                                        </p>
-                                    </div>
-                                    {balance > 0 && (
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <label className="mb-0">الصنف</label>
+                                    {selectedMerchantId && (
                                         <button
-                                            onClick={() => handlePayDebt(s.id)}
-                                            className="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-full border border-green-200 font-bold hover:bg-green-100"
+                                            type="button"
+                                            onClick={() => setShowAddProduct(true)}
+                                            className="text-[10px] font-black text-[#5c0000] hover:underline"
                                         >
-                                            سداد
+                                            + إضافة صنف لهذا المورد
                                         </button>
                                     )}
                                 </div>
-                            );
-                        })}
+                                <select
+                                    value={selectedProductId}
+                                    onChange={e => setSelectedProductId(e.target.value)}
+                                    required
+                                    disabled={!selectedMerchantId}
+                                >
+                                    <option value="">{selectedMerchantId ? 'اختر الصنف' : 'اختر المورد أولاً'}</option>
+                                    {supplierProducts.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label>الوزن (كجم)</label>
+                                <input
+                                    type="number" step="0.001"
+                                    placeholder="0.000"
+                                    value={weight} onChange={e => setWeight(e.target.value === '' ? '' : Number(e.target.value))}
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label>سعر الكيلو</label>
+                                <input
+                                    type="number" step="0.01"
+                                    placeholder="0.00"
+                                    value={price} onChange={e => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label>طريقة الدفع</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentType('cash')}
+                                        className={`btn font-black border-2 ${paymentType === 'cash' ? 'bg-[#5c0000] text-white border-[#5c0000]' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+                                    >
+                                        كاش
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentType('credit')}
+                                        className={`btn font-black border-2 ${paymentType === 'credit' ? 'bg-[#5c0000] text-white border-[#5c0000]' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+                                    >
+                                        آجل (دين)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label>التاريخ</label>
+                                <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
+                            </div>
+
+                            <div className="md:col-span-2 mt-4">
+                                <div className="bg-[#5c0000]/5 p-6 rounded-2xl border-2 border-dashed border-[#5c0000]/20 flex justify-between items-center mb-6">
+                                    <span className="text-lg font-bold text-gray-600">إجمالي الفاتورة</span>
+                                    <div className="text-right">
+                                        <span className="text-3xl font-black text-[#5c0000]">
+                                            {((Number(weight) || 0) * (Number(price) || 0)).toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                                        </span>
+                                        <span className="text-sm font-bold text-gray-400 mr-2">ج.م</span>
+                                    </div>
+                                </div>
+                                <button type="submit" className="btn btn-primary w-full shadow-2xl py-5 text-xl">
+                                    حفظ وتسجيل الفاتورة
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Recent History */}
+                    <div className="premium-card overflow-hidden !p-0">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <h3 className="font-black text-lg">آخر العمليات</h3>
+                            <Calendar size={20} className="text-gray-400" />
+                        </div>
+                        <div className="table-container">
+                            <table className="text-sm">
+                                <thead>
+                                    <tr>
+                                        <th>المورد / الصنف</th>
+                                        <th>الوزن</th>
+                                        <th>الإجمالي</th>
+                                        <th>الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {recentTransactions.map(t => (
+                                        <tr key={t.id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="p-4">
+                                                <div className="flex flex-col">
+                                                    <span className="font-black text-gray-800">{merchants.find(m => m.id === t.merchantId)?.name}</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold">{t.itemName} - {t.date}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 font-bold">{t.weight.toLocaleString('ar-EG')} كجم</td>
+                                            <td className="p-4 font-black text-[#5c0000]">{t.totalAmount.toLocaleString('ar-EG')} ج</td>
+                                            <td className="p-4">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black ${t.paymentType === 'cash' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {t.paymentType === 'cash' ? 'كاش' : 'آجل'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar: Balances */}
+                <div className="space-y-6">
+                    <div className="premium-card border-r-4 border-[#5c0000]">
+                        <h3 className="text-lg font-black mb-6 flex items-center justify-between">
+                            مديونيات الموردين
+                            <DollarSign size={20} className="text-red-500" />
+                        </h3>
+                        <div className="space-y-4">
+                            {suppliers.map(s => {
+                                const balance = getMerchantBalance(s.id);
+                                if (balance <= 0) return null;
+                                return (
+                                    <div key={s.id} className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm flex flex-col gap-3">
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-black text-gray-700">{s.name}</span>
+                                            <span className="text-red-600 font-black">{balance.toLocaleString('ar-EG')} ج</span>
+                                        </div>
+                                        <button
+                                            onClick={() => handlePayDebt(s.id)}
+                                            className="btn btn-primary btn-sm !rounded-xl !py-2 text-xs"
+                                        >
+                                            تسديد جزء
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                            {suppliers.every(s => getMerchantBalance(s.id) <= 0) && (
+                                <div className="text-center py-6">
+                                    <p className="text-gray-400 font-bold italic text-sm">لا يوجد مديونيات حالية</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Recent Transactions List */}
-            <div className="premium-card overflow-x-auto">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Calendar size={20} className="text-blue-500" /> آخر الفواتير المسجلة
-                </h3>
-                <table className="w-full text-right border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50 border-b">
-                            <th className="p-3">التاريخ</th>
-                            <th className="p-3">المورد</th>
-                            <th className="p-3">الصنف</th>
-                            <th className="p-3">الوزن</th>
-                            <th className="p-3">القيمة</th>
-                            <th className="p-3">الدفع</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {recentTransactions.map(t => (
-                            <tr key={t.id} className="border-b hover:bg-gray-50">
-                                <td className="p-3 text-sm">{t.date}</td>
-                                <td className="p-3 font-medium">{merchants.find(m => m.id === t.merchantId)?.name || 'مورد محذوف'}</td>
-                                <td className="p-3">{t.itemName}</td>
-                                <td className="p-3">{t.weight.toLocaleString('ar-EG', { maximumFractionDigits: 3 })} كجم</td>
-                                <td className="p-3 font-bold">{t.totalAmount.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج</td>
-                                <td className="p-3">
-                                    <span className={`text-xs px-2 py-1 rounded-full ${t.paymentType === 'cash' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                        {t.paymentType === 'cash' ? 'كاش' : 'أجل'}
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            {/* Modals */}
+            {showAddMerchant && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+                    <div className="premium-card w-full max-w-md animate-slide-up">
+                        <h3 className="text-2xl font-black mb-6 text-[#5c0000]">مورد جديد</h3>
+                        <form onSubmit={handleAddMerchant} className="space-y-6">
+                            <div className="space-y-2">
+                                <label>اسم الشركة / المورد</label>
+                                <input value={newMerchantName} onChange={e => setNewMerchantName(e.target.value)} required autoFocus placeholder="ادخل الاسم هنا..." />
+                            </div>
+                            <div className="flex gap-4">
+                                <button type="submit" className="btn btn-primary flex-1">إضافة</button>
+                                <button type="button" onClick={() => setShowAddMerchant(false)} className="btn btn-outline flex-1">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
-            <style>{`
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .flex-1 { flex: 1 1 0%; }
-        .h-\\[46px\\] { height: 46px; }
-        .md\\:col-span-2 { grid-column: span 2 / span 2; }
-        .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .sm\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .gap-4 { gap: 1rem; }
-        .items-end { align-items: flex-end; }
-        .p-4 { padding: 1rem; }
-        .bg-red-50 { background-color: #fef2f2; }
-        .rounded-xl { border-radius: 0.75rem; }
-        .border-red-100 { border-color: #fee2e2; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-        .overflow-x-auto { overflow-x: auto; }
-        .border-collapse { border-collapse: collapse; }
-        .bg-gray-50 { background-color: #f9fafb; }
-      `}</style>
+            {showAddProduct && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+                    <div className="premium-card w-full max-w-md animate-slide-up">
+                        <h3 className="text-2xl font-black mb-6 text-[#5c0000]">إضافة صنف جديد</h3>
+                        <form onSubmit={handleAddProduct} className="space-y-6">
+                            <div className="space-y-2">
+                                <label>اسم الصنف</label>
+                                <input value={newProductName} onChange={e => setNewProductName(e.target.value)} required autoFocus placeholder="مثلاً: بسطرمة ممتاز" />
+                            </div>
+                            <div className="p-4 bg-gray-50 rounded-xl text-sm font-bold text-gray-500">
+                                سيتم ربط هذا الصنف بـ: {merchants.find(m => m.id === selectedMerchantId)?.name}
+                            </div>
+                            <div className="flex gap-4">
+                                <button type="submit" className="btn btn-primary flex-1">تأكيد</button>
+                                <button type="button" onClick={() => setShowAddProduct(false)} className="btn btn-outline flex-1">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
